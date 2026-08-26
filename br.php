@@ -116,7 +116,7 @@ if ($user === '*') {
                     if ($entry2 === "." || $entry2 === "..") continue;
                     $full2 = $full.'/'.$entry2;
 
-                    if (str_contains(strtolower($entry), strtolower($search))) { // add thing if it is in search query
+                    if (str_contains(strtolower($entry2), strtolower($search))) { // add thing if it is in search query
                         $files[] = [
                             'name' => $entry.'/'.$entry2,
                             'mtime' => filemtime($full2),
