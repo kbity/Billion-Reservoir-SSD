@@ -50,9 +50,10 @@ td:nth-child(4), th:nth-child(4) {
 
 <body>
 
-<h1>Billion Reservoir SSD</h1>
+<h1><a href="/br.php"><font color="black">Billion Reservoir SSD</font></a></h1>
 
 <form action="/br.php" method="get" id="serversidesearch">
+    <input type="hidden" name="u" value="<?php $user = $_GET['u'] ?? ''; echo $user;?>" />
     <input type="text" name="q" class="searchbox" placeholder="Search..." value=<?php $search = $_GET['q'] ?? ''; echo $search;?>>
     <button type="submit">Search</button>
 </form>
@@ -76,24 +77,81 @@ $path = $base_path.'/'.$user;
 $files = [];
 $search = $_GET['q'] ?? '';
 
-// Read directory
-if ($handle = opendir($path)) {
-    while (($entry = readdir($handle)) !== false) {
-        if ($entry === "." || $entry === ".." || $path.$entry === $base_path.'/info.mcv') continue; // skip parent/hidden/internal data
+if ($user === '') {
+    $files[] = [
+        'name' => '*',
+        'mtime' => 0,
+        'size' => '-',
+        'desc' => '', // blank description (Apache usually leaves blank)
+        'isfolder' => true
+    ];
+}
 
-        $full = $path.'/'.$entry;
-        
-        if (str_contains(strtolower($entry), strtolower($search))) { // add thing if it is in search query
-            $files[] = [
-                'name' => $entry,
-                'mtime' => filemtime($full),
-                'size' => filesize($full),
-                'desc' => '', // blank description (Apache usually leaves blank)
-                'isfolder' => is_dir($full)
-            ];
+// Read directory
+if ($user === '*') {
+    if ($handle = opendir($base_path)) {
+        while (($entry = readdir($handle)) !== false) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+
+            $full = $base_path.'/'.$entry;
+
+            $mcvdat = file_get_contents($base_path.'/info.mcv');
+            $mcvarr = preg_split("/\r\n|\n|\r/", $mcvdat);
+            $mcv = [];
+            foreach ($mcvarr as $k) {
+                if (substr($k, 0, 1) !== '#') {
+                    $waow = explode('=', $k, 2);
+                    $mcv[$waow[0]] = $waow[1];
+                }
+            }
+
+            if (!is_dir($full)) {
+                continue;
+            }
+
+            if ($handle2 = opendir($full)) {
+                while (($entry2 = readdir($handle2)) !== false) {
+                    if ($entry2 === "." || $entry2 === "..") continue;
+                    $full2 = $full.'/'.$entry2;
+
+                    if (str_contains(strtolower($entry), strtolower($search))) { // add thing if it is in search query
+                        $files[] = [
+                            'name' => $entry.'/'.$entry2,
+                            'mtime' => filemtime($full2),
+                            'size' => filesize($full2),
+                            'desc' => '',
+                            'isfolder' => is_dir($full2),
+                            'showname' => $mcv[$entry].'/'.$entry2
+                        ];
+                    }
+                }
+            }
+            closedir($handle2);
         }
+        closedir($handle);
     }
-    closedir($handle);
+} else {
+    if ($handle = opendir($path)) {
+        while (($entry = readdir($handle)) !== false) {
+            if ($entry === "." || $entry === ".." || $path.$entry === $base_path.'/info.mcv' || $path.$entry === $base_path.'/index.php') continue; // skip parent/hidden/internal data
+
+            $full = $path.'/'.$entry;
+
+            if (str_contains(strtolower($entry), strtolower($search))) { // add thing if it is in search query
+                $files[] = [
+                    'name' => $entry,
+                    'mtime' => filemtime($full),
+                    'size' => filesize($full),
+                    'desc' => '', // blank description (Apache usually leaves blank)
+                    'isfolder' => is_dir($full),
+                    'showname' => $entry
+                ];
+            }
+        }
+        closedir($handle);
+    }
 }
 
 // Natural alphabetical sort
@@ -125,16 +183,22 @@ foreach ($files as $f) {
         $size_display = "-";
         if (array_key_exists($f['name'], $mcv)) {
             $display_name = $mcv[$f['name']];
-        } else {
+        } else if ($display_name === '*') {
+            $display_name = htmlspecialchars('<all files>');
+        }
+        else {
             $display_name = '[Folder] '.$name; // placeholder
         }
     } else {
         $size_display = number_format($size) . " bytes";
+        $display_name = htmlspecialchars($f['showname']);
     }
 
     echo "<tr class='item' data-name='".strtolower($name)."'>";
     if ($f['isfolder']) {
         echo "<td><a href='/br.php?u=$name'>$display_name</a></td>";
+    } else if ($user === '*') {
+        echo "<td><a href='/br/$name'>$display_name</a></td>";
     } else {
         echo "<td><a href='/br/$user/$name'>$display_name</a></td>";
     }
