@@ -1,0 +1,30 @@
+# owner of the bot
+developer=422195092225261568
+
+# the bot's text command prefix
+prefix=tb!
+
+# directory to save user folders too
+filesdir=files
+
+# Max size of all files. 10 GiB
+global_limit=10737418240
+
+# Max size of one user's files. 512 MiB
+user_limit=536870912
+# for trusted users
+trusted_user_limit=2684354560
+
+# Max size of a single file. 64 MiB
+file_limit=67108864
+# for trusted users
+trusted_file_limit=268435456
+
+# 10 MiB, in case they change it again (update: they did but bots are still at 10 MiB)
+discord_limit=10485760
+
+# misc text to add to channel description
+splash=[rich snob voice] I think today I'll use my "Billion Reservoir" SSD. Only the finest of storage for the finest of prison laptops. 🧐☕🇬🇧👑
+
+# Size of pages in ls and sc
+page_size=16

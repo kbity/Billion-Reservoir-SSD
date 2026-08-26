@@ -1,0 +1,40 @@
+# Emojis for the Billion Reservoir SSD Bot
+e=<:error:1540921901721976872>
+w=<:warn:1540921903890440303>
+i=<:info:1540921902720098386>
+q=<:qr:1540921900253843537>
+?=<:question:1540921899138420808>
+c=<:check:1540921896848326736>
+l=<a:windows7_busy_emoji:1540923335339417620>
+br=<:br:1540921894117711992>
+
+# User Usage Emojis
+b=<:b_:1540921892314288169>
+m=<:m_:1540921891257196594>
+bm=<:bm:1540930489827991604>
+
+# Disk Usage Bar Emojis
+be=<:bar_empty:1540921890225524798>
+bh=<:bar_half:1540921885850869770>
+bf=<:bar_full:1540921888988069948>
+bfe=<:bar_full_end:1540921884420477009>
+
+# Warn Emojis
+wbe=<:bar_empty:1540921890225524798>
+wbh=<:bar_warn_half:1540921886899314748>
+wbf=<:bar_warn:1540921887838961734>
+wbfe=<:bar_warn_end:1540921882717589554>
+
+# filetypes
+# File Generic, used for unknown types
+fg=<:ft_gen:1540921878774939738>
+# File Image
+fi=<:ft_img:1540921881547374703>
+# File Audio
+fa=<:ft_ado:1540921880184365156>
+# File Video
+fv=<:ft_mov:1540921877286092860>
+# File Document
+fd=<:ft_doc:1540921875990061076>
+# File Zip
+fz=<:ft_zip:1540919560184664125>
