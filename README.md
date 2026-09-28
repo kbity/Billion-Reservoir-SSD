@@ -5,4 +5,4 @@
 
 Of course I doubt that neither Microsoft nor Billion Reservoir will go after me for any of this, but as a disclaimer, the name "Billion Reservoir" is probably a trademark, and the various Windows assets are copyright of Microsoft Corporation
 
-!["Billion Reservoir" SSD icon](br.png)
+!["Billion Reservoir" SSD icon](br-emojis/br.png)
