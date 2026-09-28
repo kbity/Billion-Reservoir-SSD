@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import discord, aiohttp, os, traceback, sys, hashlib, asyncio, json, math
+import discord, aiohttp, os, traceback, sys, hashlib, asyncio, json, math, mimetypes
+from datetime import datetime
 from discord import app_commands
 from discord.ext import commands, tasks
 
@@ -8,6 +9,8 @@ from types import SimpleNamespace
 from urllib.parse import urlparse
 
 import mcv
+
+botver = "2.1.0"
 
 # --- mcv and json handing functions ---
 def load_mcv_file(filepath: str):
@@ -48,11 +51,13 @@ splash = cfgfile["splash"]
 page_size = int(cfgfile["page_size"])
 trusted_user_limit = int(cfgfile["trusted_user_limit"])
 trusted_file_limit = int(cfgfile["trusted_file_limit"])
+website = cfgfile.get("website", "No Website Configured!")
 
 cfg = None
 load_data() # load json data to cfg
 
 ready = False
+startup_time = None
 
 os.makedirs(filesdir, exist_ok=True)
 
@@ -68,7 +73,7 @@ emojis = load_mcv_file("emojis.mcv") # load emojis from mcv
 
 err = {"badweb": f"{emojis['w']} The installer has encountered an unexpected error installing this package. This may indicate a problem with this package. The error code is 2503.",
        "notready": f"{emojis['e']} device or resource busy",
-       "invalidurl": f"# :(\nYour BR ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.\n\n69% complete\n\n{emojis['q']} For more information and possible fixes, visit\nhttps://byuhxrpnj6.localto.net/\n\nif you call a support person, give them this info:\nError code: _resp.status_",
+       "invalidurl": f"# :(\nYour BR ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.\n\n69% complete\n\n{emojis['q']} For more information and possible fixes, visit\n{website}\n\nif you call a support person, give them this info:\nError code: _resp.status_",
        "toobig": f"{emojis['w']} The file _attachment.filename_is too large for the destination file system.",
        "generic": f"{emojis['e']} The application was unable to start correctly (0x00000000). Click OK to close the application.",
        "filenotfound": f"{emojis['w']} File not found.\nCheck the file name and try again.",
@@ -77,18 +82,21 @@ err = {"badweb": f"{emojis['w']} The installer has encountered an unexpected err
        "quota": "An unexpected error is keeping you from downloading the file. If you continue to recieve this error, you can use the error code to search for help with this problem.\n\nError 0x00000000: Not enough quota is available to process this command.",
        "noperm": f"{emojis['w']} You don't currently have permission to access this folder.",
        "alreadyexists": f"{emojis['w']} Cannot create a file when that file already exists.",
-       "successfully": f"{emojis['i']} The operation completed sucessfully"}
+       "successfully": f"{emojis['i']} The operation completed sucessfully",
+       "filealreadyexists": f"{emojis['e']} There is already a file with the same name in this location."}
 
 @bot.event
 async def on_ready():
     global ready
     global token
+    global startup_time
     del token
     bot.session = aiohttp.ClientSession()
     await tree.sync()
     ready = True
     print("i ate sand")
     update_description.start()
+    startup_time = datetime.now().timestamp()
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -166,16 +174,19 @@ async def command_ul(message, cmd):
             dlerror.append(fn)
             continue
 
-        if fn.lower().endswith('.php'):
-            await message.reply(err["php"])
-            dlerror.append(fn)
-            continue
+        for php in ('.php', '.phar', '.phtml', '.pht', '.phps', '.phpt', '.cgi'):
+            if fn.lower().endswith(php):
+                await message.reply(err["php"])
+                dlerror.append(fn)
+                continue
 
         filim = file_limit
         if is_trusted(message.author.id):
             filim = trusted_file_limit
 
-        if len(data) > file_limit: # file max check
+        filesize = size_disk(len(data))
+
+        if filesize > file_limit: # file max check
             await message.reply(err["toobig"].replace("_attachment.filename_", f"'{fn}' "))
             dlerror.append(fn)
             continue
@@ -186,32 +197,52 @@ async def command_ul(message, cmd):
         if is_trusted(message.author.id):
             uslim = trusted_user_limit
 
-        if get_folder_size(f"{filesdir}/{message.author.id}") + len(data) > uslim: # user max check
+        if get_folder_size(f"{filesdir}/{message.author.id}") + filesize > uslim: # user max check
             await message.reply(err["quota"])
             dlerror.append(fn)
             continue
 
-        if get_folder_size(filesdir) + len(data) > global_limit: # global max check
+        if get_folder_size(filesdir) + filesize > global_limit: # global max check
             await message.reply(err["diskfull"])
             dlerror.append(fn)
             continue
 
+        fn_clean = ""
+        for char in fn:
+            if char in "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZZXCVBNM.,?!@#$^&:;`-_=+()[]{}":
+                fn_clean+=char
+            else:
+                fn_clean+="_"
+        fn = fn_clean
+        if fn in (".", ".."):
+            fn = "billion_reservoir_file"
+
         dlpath = f"{filesdir}/{message.author.id}/{fn}"
-        incrementor = 0
+        incrementor = 1
         name, ext = os.path.splitext(dlpath)
         if os.path.exists(dlpath): # ensure files dont get overwritten
             with open(dlpath, "rb") as quincy:
                 dupdata = quincy.read()
             sha256 = hashlib.sha256(data).hexdigest()
             src256 = hashlib.sha256(dupdata).hexdigest()
+            continuechecks = True
             if sha256 == src256: # filter duplicates
                 await message.reply(err["alreadyexists"])
                 dlerror.append(fn)
                 continue
 
-            while os.path.exists(dlpath):
-                incrementor+=1
+            while os.path.exists(dlpath) and continuechecks:
+                with open(dlpath, "rb") as quincy:
+                    dupdata = quincy.read()
+                    src256 = hashlib.sha256(dupdata).hexdigest()
+                    if sha256 == src256: # filter duplicates
+                        continuechecks = False
+                        await message.reply(err["alreadyexists"])
+                        dlerror.append(fn)
                 dlpath = name+"_"+str(incrementor)+ext
+                incrementor+=1
+            if not continuechecks:
+                continue
 
         with open(dlpath, "wb") as greg:
             greg.write(data)
@@ -239,30 +270,64 @@ async def command_hp(message, cmd):
 
     res = f"""
 {emojis['br']} Welcome to "Billion Reservoir" SSD v2
--# Version 2.0.0, developed by mari2_ok
+-# Version {botver}, developed by mari2_ok
 The bot's prefix is `{prefix}`
 ```
 * dl/down/download - Download a file from the SSD. For other user's files, do <username>/<filename>
-* fr/free - Shows global and personal disk usage, as well as free space
+* fr/free <optional: author, default: you> - Shows global and personal disk usage, as well as free space
 * ls/list <optional: author, default: you> <optional: page> - List uploaded files
 * sc/search <keyword> <optional: author, default: global> <optional: page> - Search for files
 * ig/ignore - In a registered channel, ignore links/attachments on your message
 * st/status <string> - Sets the bot's status/presence
 * hi - Responds with "hi?"
 * dt/del/delete <filename> - Deletes a file you uploaded
+* rn/mv/ren/rename <old_filename> <new_filename> - Renames a file you uploaded to something else
+* fi/file <filename> - Gets information about a specified file
+* in/info - Gets information about this bot
+* hp/help - Shows this message
 ```"""
     if trusted:
         res+="""```* up/ul/upload - [Trusted] Uploads a file to the SSD outside of set channels
 * ad/add/add_channel - [Trusted] Registers a channel with the bot, allowing untrusted members to upload files in the channel
-* rm/remove/remove_channel - [Trusted] Unregisters a channel from the bot```"""
+* rm/remove/remove_channel - [Trusted] Unregisters a channel from the bot\
+```"""
     if dev:
         res+="""```* ev/eval - [Developer] Executes arbitrary code
-* rs/restart - [Developer] Restarts the bot```"""
+* rs/restart - [Developer] Restarts the bot
+* tr/trust <userid or mention> - [Developer] Adds specified user to trusted list
+* ut/untrust <userid or mention> - [Developer] Removes specified user from trusted list
+* ab/allow_bot <userid or mention> - [Developer] Adds specified bot user to allowed bots list
+* bb/block_bot <userid or mention> - [Developer] Removes specified bot user from allowed bots list
+* bn/ban <userid or mention> - [Developer] Bans specified user from uploading files
+* ub/unban <userid or mention> - [Developer] Unbans specified user from uploading files
+```"""
 
     await message.reply(res)
 
 async def command_hi(message, cmd):
     await message.reply("hi?")
+
+async def command_in(message, cmd):
+    await message.reply(f"""{emojis['br']} "Billion Reservoir" SSD v{botver}
+"Billion Reservoir" SSD is a bot that downloads files sent on Discord and makes them available on a simple web frontend
+developed by mari2_ok
+Owner: <@{developer}>
+Web Frontend: {website}
+Population: {len(bot.guilds)} servers
+Uptime: `{relativetime(datetime.now().timestamp() - startup_time).strip()}`
+""", allowed_mentions=discord.AllowedMentions.none())
+
+async def command_rn(message, cmd):
+    if len(cmd) < 3:
+        return await message.reply(f"Usage: {prefix}{cmd[0]} <src_filename> <dest_filename>")
+    nwp = f"{filesdir}/{message.author.id}/{cmd[2]}"
+    if os.path.exists(nwp):
+        return await message.reply(cmd[2]+'\n'+err["filealreadyexists"])
+    try:
+        os.rename(f"{filesdir}/{message.author.id}/{cmd[1]}", nwp)
+        return await message.reply(f"{emojis['c']} The operation completed successfully")
+    except  FileNotFoundError:
+        await message.reply(cmd[1]+'\n'+err["filenotfound"])
 
 async def command_dt(message, cmd):
     if len(cmd) < 2:
@@ -307,12 +372,80 @@ async def command_dl(message, cmd):
     else:
         await message.reply(fil+'\n'+err["filenotfound"])
 
+async def command_fi(message, cmd):
+    possibleauthors = load_mcv_file(f"{filesdir}/info.mcv")
+    if len(cmd) < 2:
+        return await message.reply(f"Usage: {prefix}{cmd[0]} <filename>")
+    splitcoin = cmd[1].split("/")
+    if len(splitcoin) == 1:
+        auth = str(message.author.id)
+        fil = splitcoin[0]
+    else:
+        auth = splitcoin[0]
+        fil = splitcoin[1]
+        if not os.path.isdir(f"{filesdir}/{auth}/"):
+            found = False
+            for uid in possibleauthors:
+                if auth == possibleauthors[uid]:
+                    auth = uid
+                    found = True
+                    break
+            if not found:
+                await message.reply(f'{auth}/{fil}\n'+err["filenotfound"])
+
+    fpath = f"{filesdir}/{auth}/{fil}"
+    if os.path.isfile(fpath):
+        fsize = os.path.getsize(fpath)
+        fs_disk = size_disk(fsize)
+        mime = mimetypes.guess_type(fpath)[0]
+        ext = fil.split(".")[-1].lower()
+
+        ftype = "File"
+        if "."+ext in cfg["img"]:
+            ftype = "Image"
+        elif "."+ext in cfg["aud"]:
+            ftype = "Audio"
+        elif "."+ext in cfg["vid"]:
+            ftype = "Video"
+        elif "."+ext in cfg["doc"]:
+            ftype = "Document"
+        elif "."+ext in cfg["arc"]:
+            ftype = "Archive"
+
+        if mime is None:
+            mime = "application/octet-stream"
+
+        stat = os.stat(fpath)
+        created = datetime.fromtimestamp(stat.st_ctime)
+        modified = datetime.fromtimestamp(stat.st_mtime)
+        accessed = datetime.fromtimestamp(stat.st_atime)
+
+        await message.reply(f"""```
+Filename:     {fil}
+Type of file: {ext.upper()} {ftype} ({mime})
+----------------------------------
+Location:     {possibleauthors[auth]}/{fil}
+Size:         {getfilesize(fsize)} ({fsize:,} bytes)
+Size on disk: {getfilesize(fs_disk)} ({fs_disk:,} bytes)
+----------------------------------
+Created:      {created.strftime(r"%A, %B %d, %Y, %I:%M:%S %p")}
+Modified:     {modified.strftime(r"%A, %B %d, %Y, %I:%M:%S %p")}
+Accessed:     {accessed.strftime(r"%A, %B %d, %Y, %I:%M:%S %p")}
+```""")
+    else:
+        await message.reply(fil+'\n'+err["filenotfound"])
+
 async def command_rs(message, cmd):
     print("restarting...")
     await message.reply(f"{emojis['l']} Restarting")
     os.execv(sys.executable, ['python'] + sys.argv)
 
 async def command_fr(message, cmd):
+    if len(cmd) < 2:
+        user = message.author.id
+    else:
+        user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
     total = global_limit
     used = get_folder_size(filesdir)
     step = 40
@@ -326,10 +459,10 @@ async def command_fr(message, cmd):
     brfr+=progressbar
     brfr+=f"{getfilesize(used)} of {getfilesize(total)} ({percent}%)\n\n"
 
-    if os.path.isdir(f"{filesdir}/{message.author.id}/"):
-        user_used = get_folder_size(f"{filesdir}/{message.author.id}/")
+    if os.path.isdir(f"{filesdir}/{user}/"):
+        user_used = get_folder_size(f"{filesdir}/{user}/")
         user_total = user_limit
-        if is_trusted(message.author.id):
+        if is_trusted(user):
             user_total = trusted_user_limit
         user_percent = round(((user_used)/user_total)*100, 2)
 
@@ -372,6 +505,84 @@ async def command_rm(message, cmd):
         cfg["registered_channels"].remove(message.channel.id)
         save_data()
         return await message.reply(f"{emojis['i']} Ok, I will no longer download files sent here!")
+
+async def command_tr(message, cmd):
+    if len(cmd) < 2:
+        return await message.reply(f"{emojis['e']} Error: user not specified.")
+
+    user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
+    if user in cfg["trusted_users"]:
+        return await message.reply(f"{emojis['w']} I already trust them!")
+    else:
+        cfg["trusted_users"].append(user)
+        save_data()
+        return await message.reply(f"{emojis['i']} Ok, I now trust <@{user}>!", allowed_mentions=discord.AllowedMentions.none())
+
+async def command_ut(message, cmd):
+    if len(cmd) < 2:
+        return await message.reply(f"{emojis['e']} Error: user not specified.")
+
+    user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
+    if not user in cfg["trusted_users"]:
+        return await message.reply(f"{emojis['w']} I already don't trust them!")
+    else:
+        cfg["trusted_users"].remove(user)
+        save_data()
+        return await message.reply(f"{emojis['i']} Ok, I no longer trust <@{user}>!", allowed_mentions=discord.AllowedMentions.none())
+
+async def command_ab(message, cmd):
+    if len(cmd) < 2:
+        return await message.reply(f"{emojis['e']} Error: user not specified.")
+
+    user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
+    if user in cfg["allowed_bots"]:
+        return await message.reply(f"{emojis['w']} I already allow them!")
+    else:
+        cfg["allowed_bots"].append(user)
+        save_data()
+        return await message.reply(f"{emojis['i']} Ok, I now allow <@{user}>!", allowed_mentions=discord.AllowedMentions.none())
+
+async def command_bb(message, cmd):
+    if len(cmd) < 2:
+        return await message.reply(f"{emojis['e']} Error: user not specified.")
+
+    user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
+    if not user in cfg["allowed_bots"]:
+        return await message.reply(f"{emojis['w']} I already don't allow them!")
+    else:
+        cfg["allowed_bots"].remove(user)
+        save_data()
+        return await message.reply(f"{emojis['i']} Ok, I no longer allow <@{user}>!", allowed_mentions=discord.AllowedMentions.none())
+
+async def command_bn(message, cmd):
+    if len(cmd) < 2:
+        return await message.reply(f"{emojis['e']} Error: user not specified.")
+
+    user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
+    if user in cfg["banned_users"]:
+        return await message.reply(f"{emojis['w']} They're already banned!")
+    else:
+        cfg["banned_users"].append(user)
+        save_data()
+        return await message.reply(f"{emojis['i']} Ok, I banned <@{user}>!", allowed_mentions=discord.AllowedMentions.none())
+
+async def command_ub(message, cmd):
+    if len(cmd) < 2:
+        return await message.reply(f"{emojis['e']} Error: user not specified.")
+
+    user = int(cmd[1].replace("<@", "").replace(">", "")) # strip @mention syntax
+
+    if not user in cfg["banned_users"]:
+        return await message.reply(f"{emojis['w']} They're not banned!")
+    else:
+        cfg["banned_users"].remove(user)
+        save_data()
+        return await message.reply(f"{emojis['i']} Ok, I unbanned <@{user}>!", allowed_mentions=discord.AllowedMentions.none())
 
 async def command_ls(message, cmd):
     auth = str(message.author.id) if len(cmd) == 1 else cmd[1]
@@ -513,7 +724,27 @@ cmds = {"hi": command_hi,
         "sc": command_sc,
         "search": command_sc,
         "hp": command_hp,
-        "help": command_hp
+        "help": command_hp,
+        "tr": command_tr,
+        "trust": command_tr,
+        "ut": command_ut,
+        "untust": command_ut,
+        "rn": command_rn,
+        "mv": command_rn,
+        "ren": command_rn,
+        "rename": command_rn,
+        "ab": command_ab,
+        "allow_bot": command_ab,
+        "bb": command_bb,
+        "block_bot": command_bb,
+        "bn": command_bn,
+        "ban": command_bn,
+        "ub": command_ub,
+        "unban": command_ub,
+        "in": command_in,
+        "info": command_in,
+        "fi": command_fi,
+        "file": command_fi,
         } # command registration
 
 # slash command registration
@@ -542,23 +773,33 @@ async def up_tree(ctx: commands.Context, attachment: discord.Attachment):
 @app_commands.user_install()
 @app_commands.allowed_installs(guilds=True, users=True)
 @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-async def hi_tree(ctx: commands.Context, filename: str):
+async def dt_tree(ctx: commands.Context, filename: str):
     await ctx.response.defer()
     await command_dt(imw(ctx), ["/delete", filename])
+
+@tree.command(name="rename", description="Renames a file you uploaded")
+@app_commands.user_install()
+@app_commands.allowed_installs(guilds=True, users=True)
+@app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+async def rn_tree(ctx: commands.Context, old_filename: str, new_filename: str):
+    await ctx.response.defer()
+    await command_dt(imw(ctx), ["/rename", old_filename, new_filename])
 
 @tree.command(name="free", description="Shows global and personal disk usage, as well as free space")
 @app_commands.user_install()
 @app_commands.allowed_installs(guilds=True, users=True)
 @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-async def hi_tree(ctx: commands.Context):
+async def fr_tree(ctx: commands.Context, user: discord.Member = None):
+    if user is None:
+        user = ctx.user
     await ctx.response.defer()
-    await command_fr(imw(ctx), None)
+    await command_fr(imw(ctx), ["/free", str(user.id)])
 
 @tree.command(name="help", description="Shows available text commands")
 @app_commands.user_install()
 @app_commands.allowed_installs(guilds=True, users=True)
 @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-async def hi_tree(ctx: commands.Context):
+async def hp_tree(ctx: commands.Context):
     await ctx.response.defer()
     await command_hp(imw(ctx), None)
 
@@ -566,7 +807,7 @@ async def hi_tree(ctx: commands.Context):
 @app_commands.user_install()
 @app_commands.allowed_installs(guilds=True, users=True)
 @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-async def hi_tree(ctx: commands.Context, status: str):
+async def st_tree(ctx: commands.Context, status: str):
     await ctx.response.defer()
     await command_st(imw(ctx), ["status", status])
 
@@ -602,6 +843,22 @@ async def hi_tree(ctx: commands.Context, filename: str):
     await ctx.response.defer()
     await command_dl(imw(ctx), ["/download", filename])
 
+@tree.command(name="file", description="Gets information about a specified file")
+@app_commands.user_install()
+@app_commands.allowed_installs(guilds=True, users=True)
+@app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+async def fi_tree(ctx: commands.Context, filename: str):
+    await ctx.response.defer()
+    await command_fi(imw(ctx), ["/file", filename])
+
+@tree.command(name="info", description="Gets information about this bot")
+@app_commands.user_install()
+@app_commands.allowed_installs(guilds=True, users=True)
+@app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+async def in_tree(ctx: commands.Context):
+    await ctx.response.defer()
+    await command_in(imw(ctx), None)
+
 @tree.command(name="list", description="Lists your files or another user's files, or all files")
 @app_commands.user_install()
 @app_commands.allowed_installs(guilds=True, users=True)
@@ -623,7 +880,7 @@ async def hi_tree(ctx: commands.Context, keyword: str, user: discord.Member = No
     await command_sc(imw(ctx), ["list", keyword, str(user.id), str(page)])
 
 trusted_only_cmds = ["up", "upload", "ad", "add", "rm", "remove", "ul", "add_channel", "remove_channel"]
-dev_only_cmds = ["rs", "restart", "ev", "eval"]
+dev_only_cmds = ["rs", "restart", "ev", "eval", "tr", "trust", "ut", "untrust"]
 
 # --- misc functions ---
 
@@ -705,6 +962,23 @@ def is_trusted(user: int):
     else:
         return False
 
+def relativetime(time: float):
+    time = round(time)
+    days = time//86400
+    hours = (time%86400)//3600
+    minutes = (time%3600)//60
+    seconds = (time%60)
+    ts = ''
+    if days:
+        ts+=f"{days}d, "
+    if hours:
+        ts+=f"{hours}h "
+    if minutes:
+        ts+=f"{minutes}m "
+    if seconds:
+        ts+=f"{seconds}s"
+    return ts
+
 async def downloadurl(larp: str, increasefilelimit: bool = False):
     filim = file_limit
     if increasefilelimit:
@@ -732,15 +1006,15 @@ def get_folder_size(folder):
     for item in os.listdir(folder):
         path = os.path.join(folder, item)
         if os.path.isfile(path):
-            total += os.path.getsize(path)
+            total += os.stat(path).st_blocks*512
         elif os.path.isdir(path):
             for inner_item in os.listdir(path):
                 inner_path = os.path.join(path, inner_item)
                 if os.path.isfile(inner_path):
-                    total += os.path.getsize(inner_path)
+                    total += os.stat(inner_path).st_blocks*512
     return total
 
-def getfilesize(size: int, decimalplaces = 3):
+def getfilesize(size: int, decimalplaces = 2):
     ext = "B"
     if size > 2048:
         size = size / 1024
@@ -791,6 +1065,9 @@ def generatetaglist(authorId, tage: int, fileslist: list):
         description=tagslist,
         color=discord.Color.from_rgb(0x92, 0xbf, 0x2b))
     return embed
+
+def size_disk(size: int):
+    return (math.ceil(size/4096))*4096
 
 # --- PAGIATION ---
 class MenuView(discord.ui.View):
