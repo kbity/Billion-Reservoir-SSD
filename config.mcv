@@ -28,3 +28,7 @@ splash=[rich snob voice] I think today I'll use my "Billion Reservoir" SSD. Only
 
 # Size of pages in ls and sc
 page_size=16
+
+# location of the website frontend
+# this can be ommitted from the config and a placeholder will be used instead
+website=http://127.0.0.1/br.php
