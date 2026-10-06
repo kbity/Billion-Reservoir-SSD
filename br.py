@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import mcv
 
-botver = "2.1.0"
+botver = "2.1.1"
 
 # --- mcv and json handing functions ---
 def load_mcv_file(filepath: str):
@@ -783,7 +783,7 @@ async def dt_tree(ctx: commands.Context, filename: str):
 @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
 async def rn_tree(ctx: commands.Context, old_filename: str, new_filename: str):
     await ctx.response.defer()
-    await command_dt(imw(ctx), ["/rename", old_filename, new_filename])
+    await command_rn(imw(ctx), ["/rename", old_filename, new_filename])
 
 @tree.command(name="free", description="Shows global and personal disk usage, as well as free space")
 @app_commands.user_install()
