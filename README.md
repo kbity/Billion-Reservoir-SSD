@@ -1,4 +1,4 @@
-# "Billion Reservoir" SSD v2.1.0
+# "Billion Reservoir" SSD v2.1.1
 "Billion Reservoir" SSD is a bot that downloads files sent on Discord and makes them available on a simple web frontend
 
 "Billion Reservoir" SSD has a UX designed to feel like Windows Vista/7
