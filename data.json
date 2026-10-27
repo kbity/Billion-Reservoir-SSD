@@ -96,7 +96,19 @@
     ".rgba",
     ".sgi",
     ".odg",
-    ".fodg"
+    ".fodg",
+    ".ff",
+    ".fif",
+    ".ljpg",
+    ".ljpeg",
+    ".jfif",
+    ".a2k",
+    ".ap2k",
+    ".aq2",
+    ".a2g",
+    ".a2b",
+    ".a2c",
+    ".a2ci"
   ],
   "aud": [
     ".ogg",
@@ -155,7 +167,8 @@
     ".lbc",
     ".pcm",
     ".snd",
-    ".au"
+    ".au",
+    ".aaf"
   ],
   "vid": [
     ".avi",
@@ -185,7 +198,10 @@
     ".3gp",
     ".3g2",
     ".nut",
-    ".fmv"
+    ".fmv",
+    ".bik",
+    ".smk",
+    ".bk2"
   ],
   "doc": [
     ".txt",
