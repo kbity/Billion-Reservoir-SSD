@@ -7,5 +7,7 @@ Of course it's unlikely that neither Microsoft nor Billion Reservoir will go aft
 
 !["Billion Reservoir" SSD icon](br-emojis/br.png)
 
-The Custom Icons in /bricons/ are licensed under CC BY-SA-NC 4.0 International.
+The Custom Icons in /bricons/ and maricom\* CSS themes are licensed under CC BY-SA-NC 4.0 International.
 https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+![Web Frontend](BR_Web_Frontend.png)
