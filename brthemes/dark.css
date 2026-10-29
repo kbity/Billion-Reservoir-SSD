@@ -21,13 +21,12 @@ td, th {
 }
 
 /* First column (Name) gets flexible wrapping space */
-td:nth-child(1), th:nth-child(1) {
+.first {
     width: 68%;              /* flexible but mostly name column */
 }
 
 /* Other columns stay aligned and do not shrink too small */
-td:nth-child(2), th:nth-child(2),
-td:nth-child(3), th:nth-child(3) {
+.second, .third {
     width: 16%;
     white-space: nowrap;     /* prevents timestamps/sizes from wrapping */
 }

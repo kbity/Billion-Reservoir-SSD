@@ -35,12 +35,11 @@ td, th {
   border-width: 1px;
 }
 
-td:nth-child(1), th:nth-child(1) {
+.first {
   width: 68%;
 }
 
-td:nth-child(2), th:nth-child(2),
-td:nth-child(3), th:nth-child(3) {
+.second, .third {
   width: 16%;
   white-space: nowrap;
 }
