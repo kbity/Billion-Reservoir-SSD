@@ -3,6 +3,9 @@
 
 "Billion Reservoir" SSD has a UX designed to feel like Windows Vista/7
 
-Of course it's unlikely that neither Microsoft nor Billion Reservoir will go after me for any of this, but as a disclaimer, the name "Billion Reservoir" is likely a registered trademark of Shenzhen Yichu Electronics Co., Ltd., and the various Windows assets are copyright of Microsoft Corporation
+Of course it's unlikely that neither Microsoft nor Billion Reservoir will go after me for any of this, but as a disclaimer, the name "Billion Reservoir" is likely a registered trademark of Shenzhen Yichu Electronics Co., Ltd., and the various Windows assets are copyright of Microsoft Corporation.
 
 !["Billion Reservoir" SSD icon](br-emojis/br.png)
+
+The Custom Icons in /bricons/ are licensed under CC BY-SA-NC 4.0 International.
+https://creativecommons.org/licenses/by-nc-sa/4.0/
