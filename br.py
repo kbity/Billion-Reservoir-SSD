@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import mcv
 
-botver = "2.1.1"
+botver = "2.1.2"
 
 # --- mcv and json handing functions ---
 def load_mcv_file(filepath: str):
@@ -898,7 +898,7 @@ def get_progress_bar(step, total, used, user=False):
     frac = numprogresssteps(step, total, used)
 
     w = ''
-    if frac > (step*85)//100: # set red color theme based on *about* 85% of step
+    if 0.85 <= (used/total): # set red color theme based on 85% of step
         w = 'w'
 
     progressbar = []
