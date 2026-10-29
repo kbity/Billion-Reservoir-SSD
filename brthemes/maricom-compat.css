@@ -1,0 +1,109 @@
+body {
+  font-family: monospace;
+  background-image: url("/tile.png");
+  background-repeat: repeat;
+  margin: 0px;
+}
+
+.content {
+  margin: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: calc(100vw - 40px);
+  table-layout: fixed;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #598CB9;
+}
+
+td, th {
+  padding: 4px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  border-color: #598CB9;
+  border-style: solid;
+  border-width: 1px;
+}
+
+td:nth-child(1), th:nth-child(1) {
+  width: 68%;
+}
+
+td:nth-child(2), th:nth-child(2),
+td:nth-child(3), th:nth-child(3) {
+  width: 16%;
+  white-space: nowrap;
+}
+
+.link {
+  color: #004062;
+  text-decoration: none;
+}
+.link:visited {
+  color: #004062;
+}
+.link:hover {
+  color: #007cbe;
+}
+.link:active {
+  color: black;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+.icon {
+  vertical-align: middle;
+  height: 22px;
+  width: 22px;
+  margin-right: 6px;
+}
+
+.titletext {
+  color: white;
+  text-decoration: none;
+  margin: 0px;
+  vertical-align: middle;
+  float: left;
+}
+
+.titletext a {
+  margin-top: 2px;
+}
+
+.titletext:hover {
+  text-decoration: underline;
+}
+
+#search {
+  float: right;
+  margin-top: 6.5px;
+}
+
+.header {
+  background-image: url('/title.png');
+
+  height: 40px;
+  margin-bottom: 14px;
+
+  padding-left: 60px;
+  padding-right: 60px;
+  display: block;
+}
+
+th {
+  background-image: url("/ie9/mcbr.gif");
+  color: #fff;
+}
+
+.sortbutton {
+  color: white;
+  text-decoration: none;
+}
+.sortbutton:hover {
+  text-decoration: underline;
+}

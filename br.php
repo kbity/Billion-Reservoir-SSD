@@ -18,7 +18,7 @@ $rparam = '?'.http_build_query([
     't' => $tovr,
 ]);
 
-$themes = ['default', 'bare', 'dark', 'default-noicns', 'maricom', 'maricom-dusk', 'maricom-night', 'maricom-dawn', 'aislop'];
+$themes = ['default', 'bare', 'dark', 'default-noicns', 'maricom', 'maricom-dusk', 'maricom-night', 'maricom-dawn', 'maricom-compat', 'aislop'];
 
 $t = (time()-14400)%86400; // bias to UTC-4, then modulo to day progress
 
@@ -39,6 +39,11 @@ if (in_array($tovr, $themes)) {
   $theme = '';
   $thhn = '';
 };
+
+$legacy = false;
+if ($tovr == 'maricom-compat') {
+    $legacy = true;
+}
 ?>
 
 </head>
@@ -194,6 +199,10 @@ foreach ($files as $f) {
         }
     }
 
+    $type = 'svg';
+    $locat = '/bricons';
+    if ($legacy) {$type = 'gif'; $locat = '/bricons/ie6';}
+
     if ($f['isfolder']) {
         $size_display = "-";
         if (array_key_exists($f['name'], $mcv)) {
@@ -207,31 +216,31 @@ foreach ($files as $f) {
     } else {
         $size_display = number_format($size) . " bytes";
         $display_name = htmlspecialchars($f['showname']);
-        $ftypeicon = 'file.svg';
+        $ftypeicon = "file.$type";
 
         $ext = '.'.strtolower(end(explode(".", $f['name'])));
 
         if (in_array($ext, $ftypes['doc'])) {
-            $ftypeicon = 'doc.svg';
+            $ftypeicon = "doc.$type";
         } elseif (in_array($ext, $ftypes['aud'])) {
-            $ftypeicon = 'aud.svg';
+            $ftypeicon = "aud.$type";
         } elseif (in_array($ext, $ftypes['arc'])) {
-            $ftypeicon = 'arc.svg';
+            $ftypeicon = "arc.$type";
         } elseif (in_array($ext, $ftypes['vid'])) {
-            $ftypeicon = 'vid.svg';
+            $ftypeicon = "vid.$type";
         } elseif (in_array($ext, $ftypes['img'])) {
-            $ftypeicon = 'img.svg';
+            $ftypeicon = "img.$type";
         }
         
     }
 
     echo "<tr class='item' data-name='".strtolower($name)."'>";
     if ($f['isfolder']) {
-        echo "<td><a class=link href='/br.php?u=$name$theme'><img src='/bricons/folder.svg' class=icon>$display_name</a></td>";
+        echo "<td><a class=link href='/br.php?u=$name$theme'><img src='$locat/folder.$type' class=icon>$display_name</a></td>";
     } else if ($user === '*') {
-        echo "<td><a class=link href='/br/$name'><img src='/bricons/$ftypeicon' class=icon>$display_name</a></td>";
+        echo "<td><a class=link href='/br/$name'><img src='$locat/$ftypeicon' class=icon>$display_name</a></td>";
     } else {
-        echo "<td><a class=link href='/br/$user/$name'><img src='/bricons/$ftypeicon' class=icon>$display_name</a></td>";
+        echo "<td><a class=link href='/br/$user/$name'><img src='$locat/$ftypeicon' class=icon>$display_name</a></td>";
     }
     echo "<td>$mtime</td>";
     echo "<td>$size_display</td>";
