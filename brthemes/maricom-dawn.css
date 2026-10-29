@@ -65,6 +65,7 @@ td, th {
   height: 22px;
   width: 22px;
   margin-right: 6px;
+  border: 0px solid black;
 }
 
 .titletext {
