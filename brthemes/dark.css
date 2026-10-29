@@ -53,6 +53,14 @@ td:nth-child(3), th:nth-child(3) {
     text-decoration: none;
 }
 
+.sortbutton {
+  color: white;
+  text-decoration: none;
+}
+.sortbutton:hover {
+  text-decoration: underline;
+}
+
 .titletext:hover {
     text-decoration: underline;
 }

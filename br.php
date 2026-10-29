@@ -4,7 +4,19 @@
 <title>"Billion Reservoir" SSD</title>
 
 <?php
-$tovr = $_GET['t'] ?? 'none';
+// get all used params
+$user = $_GET['u'] ?? '';
+$search = $_GET['q'] ?? '';
+$tovr = $_GET['t'] ?? '';
+$sort = $_GET['s'] ?? 'n';
+$r = $_GET['r'] ?? false;
+
+// stuff for retainging params
+$rparam = '?'.http_build_query([
+    'u' => $user,
+    'q' => $search,
+    't' => $tovr,
+]);
 
 $themes = ['default', 'bare', 'dark', 'default-noicns', 'maricom', 'maricom-dusk', 'maricom-night', 'maricom-dawn', 'aislop'];
 
@@ -36,9 +48,9 @@ if (in_array($tovr, $themes)) {
 <h1 class=titletext><a class=titletext href="/br.php<?=$thhn?>">"Billion Reservoir" SSD</a></h1>
 
 <form action="/br.php" method="get" id="search">
-    <input type="hidden" name="u" value="<?php $user = $_GET['u'] ?? ''; echo $user;?>" />
-    <input type="hidden" name="t" value="<?php $thn = $_GET['t'] ?? ''; echo $thn;?>" />
-    <input type="text" name="q" class="searchbox" placeholder="Search..." value=<?php $search = $_GET['q'] ?? ''; echo $search;?>>
+    <input type="hidden" name="u" value="<?php echo $user;?>" />
+    <input type="hidden" name="t" value="<?php echo $thn;?>" />
+    <input type="text" name="q" class="searchbox" placeholder="Search..." value=<?php echo $search;?>>
     <button type="submit">Search</button>
 </form>
 
@@ -47,20 +59,18 @@ if (in_array($tovr, $themes)) {
 <table>
 <thead>
 <tr>
-    <th>Name</th>
-    <th>Last modified</th>
-    <th>Size</th>
+    <th><a class=sortbutton href="/br.php<?php echo $rparam.'&s=n'; if ($sort=='n' and $r == false) {echo '&r=true';} ?>">Name</a></th>
+    <th><a class=sortbutton href="/br.php<?php echo $rparam.'&s=m'; if ($sort=='m' and $r == false) {echo '&r=true';} ?>">Last modified</a></th>
+    <th><a class=sortbutton href="/br.php<?php echo $rparam.'&s=s'; if ($sort=='s' and $r == false) {echo '&r=true';} ?>">Size</a></th>
 </tr>
 </thead>
 
 <tbody id="filelist">
 <?php
 $base_path = '/var/www/html/br/'; // base folder to search
-$user = $_GET['u'] ?? '';
 
 $path = $base_path.'/'.$user;
 $files = [];
-$search = $_GET['q'] ?? '';
 
 $ftypes = json_decode('{"img":[".png",".apng",".jpg",".jpe",".jpeg",".gif",".gifv",".bmp",".dib",".ico",".cur",".ani",".xbm",".xpm",".pbm",".pgm",".ppm",".pam",".pfm",".pnm",".apf",".apf2",".af2",".aif2",".ap2",".aif",".fits",".flif",".flf",".fuif",".j",".jxl",".jpxl",".jxll",".jpegxl",".webp",".wbp",".jxr",".hdp",".wmp",".wbmp",".wbitmap",".wbm",".bruh",".heif",".heic",".avif",".avifs",".tiff",".tif",".bpg",".mqi",".mqif",".qoi",".kq1",".kqi",".fli",".flc",".flx",".svg",".svgz",".psd",".xcf",".farbfeld",".farb",".pcx",".tga",".dds",".jls",".jp2",".j2k",".jpf",".jpx",".jpm",".mj2",".jbg",".jb2",".mng",".ota",".otb",".rgb",".rgba",".sgi",".odg",".fodg",".ff",".fif",".ljpg",".ljpeg",".jfif",".a2k",".ap2k",".aq2",".a2g",".a2b",".a2c",".a2ci",".qlic"],"aud":[".ogg",".oga",".opus",".spx",".xm",".wv",".wvc",".m4a",".m4b",".m4p",".aac",".alac",".mp1",".mp2",".mp3",".wma",".mod",".stm",".s3m",".it",".mid",".midi",".wav",".rf64",".aiff",".aif",".aifc",".flac",".ape",".mac",".aa3",".aea",".at3",".at9",".atp",".hma",".oma",".omg",".fur",".mptm",".ecdc",".mpc",".ra",".rm",".ram",".amr",".tta",".ofr",".ofs",".g722",".g726",".g711",".g729",".lbc",".pcm",".snd",".au",".aaf"],"vid":[".avi",".webm",".wbm",".mkv",".ogv",".ogx",".mp4",".m4v",".ts",".m2ts",".mts",".mpg",".m2p",".mpeg",".vob",".m1v",".m2v",".vro",".m4s",".mov",".qtf",".qtff",".qti",".qif",".3gp",".3g2",".nut",".fmv",".bik",".smk",".bk2",".mjpg"],"doc":[".txt",".mcv",".json",".xml",".jsn",".text",".md",".odf",".fodt",".odp",".fodp",".ods",".fods",".docx",".docm",".pptx",".pptm",".xlsx",".xlsm",".rtf",".pdf",".doc",".eps",".epub",".abw",".py",".js",".log"],"arc":[".zip",".rar",".7z",".tar",".gz",".xz",".zst",".a",".ar",".cpio",".shar",".lbr",".mar",".sbx",".bz2",".z",".br",".bz2",".F",".genozip",".lz",".lz4",".lzma",".lzo",".rz",".sfark",".sz",".s7z",".aar",".ace",".afa",".alz",".arc",".ark",".cdx",".arj",".b1",".b6z",".ba",".bh",".cab",".car",".cfs",".cpt",".dar",".dd",".dgc",".dmg",".apk",".ear",".gca",".ha",".hki",".ice",".jar",".kgb",".lzh",".lza",".lzx",".pak",".partimg",".paq6",".paq7",".paq8",".pea",".phar",".pim",".pit",".qda",".rk",".sda",".sea",".sen",".sfx",".shk",".sit",".sitx",".sqx",".tgz",".uc",".uc0",".uc2",".ucn",".ur2",".ue2",".uca",".uha",".war",".wim",".xar",".xp3",".yz1",".zipx",".zoo",".zpaq",".zz",".ecc",".ecsbx",".fec",".par",".par2",".rev",".sq"]}', true);
 
@@ -139,10 +149,26 @@ if ($user === '*') {
     }
 }
 
-// Natural alphabetical sort
-usort($files, function($a, $b) {
-    return strnatcasecmp($a['name'], $b['name']);
-});
+if ($sort == 'n') {
+    // Natural alphabetical sort
+    usort($files, function($a, $b) {
+        return strnatcasecmp($a['name'], $b['name']);
+    });
+} elseif ($sort == 'm') {
+    // Sort by modified date
+    usort($files, function($a, $b) {
+        return ($a['mtime'] < $b['mtime']);
+    });
+} elseif ($sort == 's') {
+    // Sort by size
+    usort($files, function($a, $b) {
+        return ($a['size'] < $b['size']);
+    });
+}
+
+if ($r == true) {
+  $files = array_reverse($files);
+}
 
 // Display rows
 foreach ($files as $f) {
@@ -215,7 +241,7 @@ foreach ($files as $f) {
 </tbody>
 </table>
 <?php
-if ($tovr == 'none') {
+if ($tovr == '') {
   echo '<p>Theme Select: <a class=link href="?t=maricom-dawn">Maricom Dawn</a> | <a class=link href="?t=maricom">Maricom Day</a> | <a class=link href="?t=maricom-dusk">Maricom Dusk</a> | <a class=link href="?t=maricom-night">Maricom Night</a> | <a class=link href="?t=default">Standard</a> | <a class=link href="?t=dark">Standard (Dark)</a> | <a class=link href="?t=default-noicns">Classic</a> | <a class=link href="?t=bare">Minimal</a></p>';
 }
 ?>
@@ -224,7 +250,7 @@ if ($tovr == 'none') {
 // remove server side object
 const ssbutton = document.getElementById("search");
 const thing = document.createElement("div");
-thing.innerHTML = '<div id="search"><input type="text" class="searchbox" id="searchbox" placeholder="Search..." value=<?php $search = $_GET['q'] ?? ''; echo $search;?>> <button id="sbutton">Search</button></div>';
+thing.innerHTML = '<div id="search"><input type="text" class="searchbox" id="searchbox" placeholder="Search..." value=<?php echo $search;?>> <button id="sbutton">Search</button></div>';
 ssbutton.replaceWith(thing);
 
 // client-side search filter

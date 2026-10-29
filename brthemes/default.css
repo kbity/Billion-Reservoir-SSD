@@ -55,3 +55,11 @@ td:nth-child(3), th:nth-child(3) {
 .titletext:hover {
     text-decoration: underline;
 }
+
+.sortbutton {
+  color: black;
+  text-decoration: none;
+}
+.sortbutton:hover {
+  text-decoration: underline;
+}

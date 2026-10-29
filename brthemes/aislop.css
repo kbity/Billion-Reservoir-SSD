@@ -307,3 +307,10 @@ a:focus-visible {
     }
 }
 
+.sortbutton {
+  color: black;
+  text-decoration: none;
+}
+.sortbutton:hover {
+  text-decoration: underline;
+}

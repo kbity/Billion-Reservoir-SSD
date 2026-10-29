@@ -115,3 +115,11 @@ th {
   background-image: -o-linear-gradient(top, #c3dae5, #a3becc 50%, #6c91a6 50%, #466c80);
   color: #fff;
 }
+
+.sortbutton {
+  color: white;
+  text-decoration: none;
+}
+.sortbutton:hover {
+  text-decoration: underline;
+}
