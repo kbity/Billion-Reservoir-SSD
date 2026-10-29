@@ -54,7 +54,7 @@ if ($tovr == 'maricom-compat') {
 
 <form action="/br.php" method="get" id="search">
     <input type="hidden" name="u" value="<?php echo $user;?>" />
-    <input type="hidden" name="t" value="<?php echo $thn;?>" />
+    <input type="hidden" name="t" value="<?php echo $tovr;?>" />
     <input type="text" name="q" class="searchbox" placeholder="Search..." value=<?php echo $search;?>>
     <button type="submit">Search</button>
 </form>
@@ -64,9 +64,9 @@ if ($tovr == 'maricom-compat') {
 <table>
 <thead>
 <tr>
-    <th><a class=sortbutton href="/br.php<?php echo $rparam.'&s=n'; if ($sort=='n' and $r == false) {echo '&r=true';} ?>">Name</a></th>
-    <th><a class=sortbutton href="/br.php<?php echo $rparam.'&s=m'; if ($sort=='m' and $r == false) {echo '&r=true';} ?>">Last modified</a></th>
-    <th><a class=sortbutton href="/br.php<?php echo $rparam.'&s=s'; if ($sort=='s' and $r == false) {echo '&r=true';} ?>">Size</a></th>
+    <th class=first><a class=sortbutton href="/br.php<?php echo $rparam.'&s=n'; if ($sort=='n' and $r == false) {echo '&r=true';} ?>">Name</a></th>
+    <th class=second><a class=sortbutton href="/br.php<?php echo $rparam.'&s=m'; if ($sort=='m' and $r == false) {echo '&r=true';} ?>">Last modified</a></th>
+    <th class=third><a class=sortbutton href="/br.php<?php echo $rparam.'&s=s'; if ($sort=='s' and $r == false) {echo '&r=true';} ?>">Size</a></th>
 </tr>
 </thead>
 
@@ -236,14 +236,14 @@ foreach ($files as $f) {
 
     echo "<tr class='item' data-name='".strtolower($name)."'>";
     if ($f['isfolder']) {
-        echo "<td><a class=link href='/br.php?u=$name$theme'><img src='$locat/folder.$type' class=icon>$display_name</a></td>";
+        echo "<td class=first><a class=link href='/br.php?u=$name$theme'><img src='$locat/folder.$type' class=icon>$display_name</a></td>";
     } else if ($user === '*') {
-        echo "<td><a class=link href='/br/$name'><img src='$locat/$ftypeicon' class=icon>$display_name</a></td>";
+        echo "<td class=first><a class=link href='/br/$name'><img src='$locat/$ftypeicon' class=icon>$display_name</a></td>";
     } else {
-        echo "<td><a class=link href='/br/$user/$name'><img src='$locat/$ftypeicon' class=icon>$display_name</a></td>";
+        echo "<td class=first><a class=link href='/br/$user/$name'><img src='$locat/$ftypeicon' class=icon>$display_name</a></td>";
     }
-    echo "<td>$mtime</td>";
-    echo "<td>$size_display</td>";
+    echo "<td class=second>$mtime</td>";
+    echo "<td class=third>$size_display</td>";
     echo "</tr>";
 }
 ?>
