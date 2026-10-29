@@ -1,0 +1,58 @@
+body {
+    font-family: monospace;
+    background: #000;
+    color: #fff;
+    margin: 20px;
+    overflow-x: hidden;      /* prevents overflow scrollbars */
+}
+
+table {
+    border-collapse: collapse;
+    width: calc(100vw - 40px);             /* table matches viewport */
+    table-layout: fixed;     /* forces wrapping + stable columns */
+}
+
+td, th {
+    padding: 4px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    word-wrap: break-word;   /* wrap long file names */
+    overflow-wrap: break-word;
+}
+
+/* First column (Name) gets flexible wrapping space */
+td:nth-child(1), th:nth-child(1) {
+    width: 68%;              /* flexible but mostly name column */
+}
+
+/* Other columns stay aligned and do not shrink too small */
+td:nth-child(2), th:nth-child(2),
+td:nth-child(3), th:nth-child(3) {
+    width: 16%;
+    white-space: nowrap;     /* prevents timestamps/sizes from wrapping */
+}
+
+.link {
+    color: #77f;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+.icon {
+    vertical-align: middle;
+    height: 22px;
+    width: 22px;
+    margin-right: 6px;
+}
+
+.titletext {
+    color: white;
+    text-decoration: none;
+}
+
+.titletext:hover {
+    text-decoration: underline;
+}

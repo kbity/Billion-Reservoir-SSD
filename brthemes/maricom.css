@@ -1,0 +1,117 @@
+body {
+  font-family: monospace;
+  background-size: 100% 100%;
+  background-image: url("/ie9/day.svg");
+  background-image: linear-gradient(to bottom, white, #B1E3FA);
+  background-image: -moz-linear-gradient(top, white, #B1E3FA);
+  background-image: -webkit-linear-gradient(top, white, #B1E3FA);
+  background-image: -o-linear-gradient(top, white, #B1E3FA);
+  margin: 0px;
+  min-height: 100vh;
+}
+
+.content {
+  margin: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: calc(100vw - 40px);
+  table-layout: fixed;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #598CB9;
+}
+
+td, th {
+  padding: 4px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  border-color: #598CB9;
+  border-style: solid;
+  border-width: 1px;
+}
+
+td:nth-child(1), th:nth-child(1) {
+  width: 68%;
+}
+
+td:nth-child(2), th:nth-child(2),
+td:nth-child(3), th:nth-child(3) {
+  width: 16%;
+  white-space: nowrap;
+}
+
+.link {
+  color: #004062;
+  text-decoration: none;
+}
+.link:visited {
+  color: #004062;
+}
+.link:hover {
+  color: #007cbe;
+}
+.link:active {
+  color: black;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+.icon {
+  vertical-align: middle;
+  height: 22px;
+  width: 22px;
+  margin-right: 6px;
+}
+
+.titletext {
+  color: white;
+  text-decoration: none;
+  margin: 0px;
+  vertical-align: middle;
+  float: left;
+}
+
+.titletext a {
+  margin-top: 2px;
+}
+
+.titletext:hover {
+  text-decoration: underline;
+}
+
+#search {
+  float: right;
+  margin-top: 6.5px;
+}
+
+.header {
+  background-size: 100% 100%;
+  background-image: url("/ie9/day-title.svg");
+  background-image: linear-gradient(to bottom, #8db6da, #457cac 50%, #305a80 50%, #274c6b);
+  background-image: -moz-linear-gradient(bottom, #274c6b, #305a80 50%, #457cac 50%, #8db6da);
+  background-image: -webkit-linear-gradient(bottom, #274c6b, #305a80 50%, #457cac 50%, #8db6da);
+  background-image: -o-linear-gradient(bottom, #274c6b, #305a80 50%, #457cac 50%, #8db6da);
+  /* Drop shadow */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  height: 40px;
+  margin-bottom: 14px;
+
+  padding-left: 60px;
+  padding-right: 60px;
+  display: block;
+}
+
+th {
+  background-size: 100% 100%;
+  background-image: url("/ie9/mcbr.svg");
+  background-image: linear-gradient(to bottom, #c3dae5, #a3becc 50%, #6c91a6 50%, #466c80);
+  background-image: -moz-linear-gradient(top, #c3dae5, #a3becc 50%, #6c91a6 50%, #466c80);
+  background-image: -webkit-linear-gradient(top, #c3dae5, #a3becc 50%, #6c91a6 50%, #466c80);
+  background-image: -o-linear-gradient(top, #c3dae5, #a3becc 50%, #6c91a6 50%, #466c80);
+  color: #fff;
+}
