@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import mcv
 
-botver = "2.1.2"
+botver = "2.1.3"
 
 # --- mcv and json handing functions ---
 def load_mcv_file(filepath: str):
@@ -186,7 +186,7 @@ async def command_ul(message, cmd):
 
         filesize = size_disk(len(data))
 
-        if filesize > file_limit: # file max check
+        if filesize > filim: # file max check
             await message.reply(err["toobig"].replace("_attachment.filename_", f"'{fn}' "))
             dlerror.append(fn)
             continue
